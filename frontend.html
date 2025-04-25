@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Flight Tracker Chatbot</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      background: #f2f2f2;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      border: 1px solid #ccc;
+    }
+    .chat-window {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+    }
+    .message {
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+    .user {
+      background: #daf1da;
+      align-self: flex-end;
+    }
+    .bot {
+      background: #e2e2e2;
+      align-self: flex-start;
+    }
+    .input-box {
+      display: flex;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    .input-box input {
+      flex: 1;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    .input-box button {
+      margin-left: 10px;
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="chat-window" id="chat-window"></div>
+    <div class="input-box">
+      <input type="text" id="user-input" placeholder="Enter flight number or status...">
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatWindow = document.getElementById('chat-window');
+    const userInput = document.getElementById('user-input');
+
+    function appendMessage(message, sender) {
+      const msgDiv = document.createElement('div');
+      msgDiv.classList.add('message', sender);
+      msgDiv.textContent = message;
+      chatWindow.appendChild(msgDiv);
+      chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      appendMessage(message, 'user');
+      userInput.value = '';
+
+      appendMessage('Searching flight info for "' + message + '"...', 'bot');
+
+      try {
+        const response = await fetch('/track', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ query: message })
+        });
+
+        const data = await response.json();
+        appendMessage(data.reply || 'No data found.', 'bot');
+      } catch (err) {
+        appendMessage('Error contacting server.', 'bot');
+      }
+    }
+  </script>
+</body>
+</html>
